@@ -40,6 +40,8 @@ func (ls *LockServer) Lock(args *LockArgs, reply *LockReply) error {
 	locked, _ := ls.locks[args.Lockname]
 	re, present := ls.UUIDs[args.UUID]
 
+	// if request is not present in server, do routine
+	// otherwise, send client the saved result
 	if present == false {
 		if locked {
 			reply.OK = false
@@ -60,7 +62,6 @@ func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
 	ls.mu.Lock()
 	defer ls.mu.Unlock()
 
-	// if self is P, need to send to B first
 	if ls.am_primary == true && ls.backupActive == true {
 		ls.backupActive = call(ls.backup, "LockServer.Unlock", args, reply)
 	}
